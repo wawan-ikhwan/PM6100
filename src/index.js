@@ -39,6 +39,9 @@ const client = net.createServer((socket)=>{
     console.log('CLIENT CONNECT '+socket.remoteAddress+':'+socket.remotePort);
     socket.setKeepAlive(true,0);
     clientSockets.push(socket);
+    socket.on('error',(e)=>{
+        console.log(e);
+    });
     socket.on('end', () => {
         // remove the client for list
         const index = clientSockets.indexOf(socket);
