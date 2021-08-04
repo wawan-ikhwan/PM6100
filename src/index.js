@@ -27,6 +27,24 @@ const listCurrentDevices = () => {
     console.log('============================');
 }
 
+const terminateSubscriber = (msg,socket) => {
+    const index = subscriberSockets.indexOf(socket);
+    if (index !== -1) { // jika index ditemukan
+        console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has '+msg+' !');
+        subscriberSockets.splice(index, 1);
+        listCurrentDevices();
+    }
+}
+
+const terminatePublisher = (msg, socket) => {
+    const index = publisherSockets.indexOf(socket);
+    if (index !== -1) { // jika index ditemukan
+        console.log('Publisher '+publisherSockets[index].remoteAddress+':'+publisherSockets[index].remotePort+' has '+msg+' !');
+        publisherSockets.splice(index, 1);
+        listCurrentDevices();
+    }
+}
+
 // PUBLISHER SECTION
 const publisher = net.createServer((socket)=> {
 
@@ -42,23 +60,17 @@ const publisher = net.createServer((socket)=> {
         }
     });
     socket.on('close',(e)=>{
-        console.log('Publisher has closed! Error:'+e);
-        listCurrentDevices();
+        terminatePublisher('closed error='+e,socket);
     });
     socket.on('drain',()=>{
         console.log('Publisher is no data!');
     });
     socket.on('error',(e)=>{
         console.log(e);
+        terminatePublisher('error',socket);
     });
     socket.on('end',()=>{
-        // remove the publishers for list
-        const index = publisherSockets.indexOf(socket);
-        if (index !== -1) { // jika index ditemukan
-            console.log('Publisher '+publisherSockets[index].remoteAddress+':'+publisherSockets[index].remotePort+' has disconnected!');
-            publisherSockets.splice(index, 1);
-            listCurrentDevices();
-        }
+        terminatePublisher('disconnected', socket);
     });
 });
 publisher.listen(process.env.WRITE_PORT, process.env.HOST);
@@ -71,21 +83,15 @@ const subscriber = net.createServer((socket)=>{
     listCurrentDevices();
     socket.setKeepAlive(true,0);
 
+    socket.on('close',(e)=>{
+        terminateSubscriber('closed error='+e,socket);
+    });
     socket.on('error',(e)=>{
         console.log(e);
-    });
-    socket.on('close',(e)=>{
-        console.log('Subscriber has closed! Error:'+e);
-        listCurrentDevices();
+        terminateSubscriber('error',socket);
     });
     socket.on('end', () => {
-        // remove the subscriber for list
-        const index = subscriberSockets.indexOf(socket);
-            if (index !== -1) { // jika index ditemukan
-                console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has disconnected!');
-                subscriberSockets.splice(index, 1);
-                listCurrentDevices();
-            }
+        terminateSubscriber('disconnected',socket);
     });
 })
 subscriber.listen(process.env.READ_PORT, process.env.HOST);
