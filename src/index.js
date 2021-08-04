@@ -43,6 +43,7 @@ const publisher = net.createServer((socket)=> {
     });
     socket.on('close',(e)=>{
         console.log('Publisher has closed! Error:'+e);
+        listCurrentDevices();
     });
     socket.on('drain',()=>{
         console.log('Publisher is no data!');
@@ -75,6 +76,7 @@ const subscriber = net.createServer((socket)=>{
     });
     socket.on('close',(e)=>{
         console.log('Subscriber has closed! Error:'+e);
+        listCurrentDevices();
     });
     socket.on('end', () => {
         // remove the subscriber for list
