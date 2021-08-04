@@ -30,7 +30,7 @@ const listCurrentDevices = () => {
 const terminateSubscriber = (msg,socket) => {
     const index = subscriberSockets.indexOf(socket);
     if (index !== -1) { // jika index 
-        socket.end();
+        publisherSockets[index].end
         console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has '+msg+' !');
         subscriberSockets.splice(index, 1);
         listCurrentDevices();
@@ -40,7 +40,7 @@ const terminateSubscriber = (msg,socket) => {
 const terminatePublisher = (msg, socket) => {
     const index = publisherSockets.indexOf(socket);
     if (index !== -1) { // jika index ditemukan
-        socket.end();
+        publisherSockets[index].end();
         console.log('Publisher '+publisherSockets[index].remoteAddress+':'+publisherSockets[index].remotePort+' has '+msg+' !');
         publisherSockets.splice(index, 1);
         listCurrentDevices();
