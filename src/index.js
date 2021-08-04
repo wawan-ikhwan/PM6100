@@ -2,53 +2,72 @@ require('dotenv').config();
 
 const net = require('net');
 
-let clientSockets = [];
+const publisherSockets = []; //para publishers
 
-const broadcast = (msg) => {
-    //Loop through the active clients object
-    clientSockets.forEach((client) => {
-        client.write(msg);
+const subscriberSockets = []; // para subscribers
+
+const broadcast = (msg) => { // broadcast data ke semua subscriber
+    //Loop through the active subscribers object
+    subscriberSockets.forEach((sub) => {
+        sub.write(msg);
     });
 };
 
-const server = net.createServer((socket)=> {
-    console.log('ESP <-- '+socket.remoteAddress+':'+socket.remotePort);
+// PUBLISHER SECTION
+const publisher = net.createServer((socket)=> {
+
+    publisherSockets.push(socket);
+    console.log('Publisher '+socket.remoteAddress+':'+socket.remotePort+' has connected!');
     socket.setEncoding('ascii');
     socket.setKeepAlive(true,0);
+
     socket.on('data',(data)=>{
-        if(clientSockets.length>0){
+        if(subscriberSockets.length>0){ // cek jika ada subscribers
             broadcast(data);
         }
     });
-    socket.on('end',()=>{
-        console.log("ESP Disconnected!");
-    });
     socket.on('close',(e)=>{
-        console.log("ESP close! "+e);
+        console.log('Publisher has closed! Error:'+e);
     });
     socket.on('drain',()=>{
-        console.log("ESP Nodata!");
+        console.log('Publisher is no data!');
     });
     socket.on('error',(e)=>{
         console.log(e);
+    });
+    socket.on('end',()=>{
+        // remove the publishers for list
+        const index = publisherSockets.indexOf(socket);
+        if (index !== -1) { // jika index ditemukan
+            console.log('Publisher '+publisherSockets[index].remoteAddress+':'+publisherSockets[index].remotePort+' has disconnected!');
+            publisherSockets.splice(index, 1);
+            console.log(publisherSockets);
+        }
     });
 });
-server.listen(process.env.WRITE_PORT, process.env.HOST);
+publisher.listen(process.env.WRITE_PORT, process.env.HOST);
 
-const client = net.createServer((socket)=>{
-    console.log('CLIENT CONNECT '+socket.remoteAddress+':'+socket.remotePort);
+// SUBSCRIBER SECTION
+const subscriber = net.createServer((socket)=>{
+
+    subscriberSockets.push(socket);
+    console.log('Subscriber '+socket.remoteAddress+':'+socket.remotePort+' has connected!');
     socket.setKeepAlive(true,0);
-    clientSockets.push(socket);
+
     socket.on('error',(e)=>{
         console.log(e);
     });
+    socket.on('close',(e)=>{
+        console.log('Subscriber has closed! Error:'+e);
+    });
     socket.on('end', () => {
-        // remove the client for list
-        const index = clientSockets.indexOf(socket);
-            if (index !== -1) {
-                console.log('CLIENT DISCONNECT '+clientSockets[index].remoteAddress+':'+clientSockets[index].remotePort);
-                clientSockets.splice(index, 1);
+        // remove the subscriber for list
+        const index = subscriberSockets.indexOf(socket);
+            if (index !== -1) { // jika index ditemukan
+                console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has disconnected!');
+                subscriberSockets.splice(index, 1);
+                console.log(subscriberSockets);
             }
     });
 })
-client.listen(process.env.READ_PORT, process.env.HOST);
+subscriber.listen(process.env.READ_PORT, process.env.HOST);
