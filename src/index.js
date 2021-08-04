@@ -30,7 +30,7 @@ const listCurrentDevices = () => {
 const terminateSubscriber = (msg,socket) => {
     const index = subscriberSockets.indexOf(socket);
     if (index !== -1) { // jika index 
-        publisherSockets[index].end
+        publisherSockets[index].end();
         console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has '+msg+' !');
         subscriberSockets.splice(index, 1);
         listCurrentDevices();
