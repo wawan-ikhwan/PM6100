@@ -13,6 +13,19 @@ const broadcast = (msg) => { // broadcast data ke semua subscriber
     });
 };
 
+const listCurrentDevices = (devs,type) => {
+    if (type === 'pub'){
+        console.log('========CURRENT PUBS========');
+    }
+    else if (type === 'sub'){
+        console.log('========CURRENT SUBS========');
+    }
+    devs.forEach((dev) => {
+        console.log(dev.remoteAddress+':'+dev.remotePort);
+    });
+        console.log('============================');
+}
+
 // PUBLISHER SECTION
 const publisher = net.createServer((socket)=> {
 
@@ -41,7 +54,7 @@ const publisher = net.createServer((socket)=> {
         if (index !== -1) { // jika index ditemukan
             console.log('Publisher '+publisherSockets[index].remoteAddress+':'+publisherSockets[index].remotePort+' has disconnected!');
             publisherSockets.splice(index, 1);
-            console.log(publisherSockets);
+            listCurrentDevices(publisherSockets, 'pub');
         }
     });
 });
@@ -67,6 +80,7 @@ const subscriber = net.createServer((socket)=>{
                 console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has disconnected!');
                 subscriberSockets.splice(index, 1);
                 console.log(subscriberSockets);
+                listCurrentDevices(subscriberSockets, 'sub');
             }
     });
 })
