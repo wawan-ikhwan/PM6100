@@ -79,7 +79,6 @@ const subscriber = net.createServer((socket)=>{
             if (index !== -1) { // jika index ditemukan
                 console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has disconnected!');
                 subscriberSockets.splice(index, 1);
-                console.log(subscriberSockets);
                 listCurrentDevices(subscriberSockets, 'sub');
             }
     });
