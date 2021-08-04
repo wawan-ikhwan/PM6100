@@ -13,17 +13,18 @@ const broadcast = (msg) => { // broadcast data ke semua subscriber
     });
 };
 
-const listCurrentDevices = (devs,type) => {
-    if (type === 'pub'){
-        console.log('========CURRENT PUBS========');
-    }
-    else if (type === 'sub'){
-        console.log('========CURRENT SUBS========');
-    }
-    devs.forEach((dev) => {
+const listCurrentDevices = () => {
+    console.log('========CURRENT PUBS========');
+    publisherSockets.forEach((dev) => {
         console.log(dev.remoteAddress+':'+dev.remotePort);
     });
-        console.log('============================');
+    
+    console.log('========CURRENT SUBS========');
+    subscriberSockets.forEach((dev) => {
+        console.log(dev.remoteAddress+':'+dev.remotePort);
+    });
+
+    console.log('============================');
 }
 
 // PUBLISHER SECTION
@@ -31,6 +32,7 @@ const publisher = net.createServer((socket)=> {
 
     publisherSockets.push(socket);
     console.log('Publisher '+socket.remoteAddress+':'+socket.remotePort+' has connected!');
+    listCurrentDevices();
     socket.setEncoding('ascii');
     socket.setKeepAlive(true,0);
 
@@ -54,7 +56,7 @@ const publisher = net.createServer((socket)=> {
         if (index !== -1) { // jika index ditemukan
             console.log('Publisher '+publisherSockets[index].remoteAddress+':'+publisherSockets[index].remotePort+' has disconnected!');
             publisherSockets.splice(index, 1);
-            listCurrentDevices(publisherSockets, 'pub');
+            listCurrentDevices();
         }
     });
 });
@@ -65,6 +67,7 @@ const subscriber = net.createServer((socket)=>{
 
     subscriberSockets.push(socket);
     console.log('Subscriber '+socket.remoteAddress+':'+socket.remotePort+' has connected!');
+    listCurrentDevices();
     socket.setKeepAlive(true,0);
 
     socket.on('error',(e)=>{
@@ -79,7 +82,7 @@ const subscriber = net.createServer((socket)=>{
             if (index !== -1) { // jika index ditemukan
                 console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has disconnected!');
                 subscriberSockets.splice(index, 1);
-                listCurrentDevices(subscriberSockets, 'sub');
+                listCurrentDevices();
             }
     });
 })
