@@ -29,7 +29,8 @@ const listCurrentDevices = () => {
 
 const terminateSubscriber = (msg,socket) => {
     const index = subscriberSockets.indexOf(socket);
-    if (index !== -1) { // jika index ditemukan
+    if (index !== -1) { // jika index 
+        socket.end();
         console.log('Subscriber '+subscriberSockets[index].remoteAddress+':'+subscriberSockets[index].remotePort+' has '+msg+' !');
         subscriberSockets.splice(index, 1);
         listCurrentDevices();
@@ -39,6 +40,7 @@ const terminateSubscriber = (msg,socket) => {
 const terminatePublisher = (msg, socket) => {
     const index = publisherSockets.indexOf(socket);
     if (index !== -1) { // jika index ditemukan
+        socket.end();
         console.log('Publisher '+publisherSockets[index].remoteAddress+':'+publisherSockets[index].remotePort+' has '+msg+' !');
         publisherSockets.splice(index, 1);
         listCurrentDevices();
@@ -49,7 +51,7 @@ const terminatePublisher = (msg, socket) => {
 const publisher = net.createServer((socket)=> {
 
     publisherSockets.push(socket);
-    console.log('Publisher '+socket.remoteAddress+':'+socket.remotePort+' has connected!');
+    console.log('Publisher '+socket.remoteAddress+':'+socket.remotePort+' has connected !');
     listCurrentDevices();
     socket.setEncoding('ascii');
     socket.setKeepAlive(true,0);
@@ -79,7 +81,7 @@ publisher.listen(process.env.WRITE_PORT, process.env.HOST);
 const subscriber = net.createServer((socket)=>{
 
     subscriberSockets.push(socket);
-    console.log('Subscriber '+socket.remoteAddress+':'+socket.remotePort+' has connected!');
+    console.log('Subscriber '+socket.remoteAddress+':'+socket.remotePort+' has connected !');
     listCurrentDevices();
     socket.setKeepAlive(true,0);
 
